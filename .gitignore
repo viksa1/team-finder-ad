@@ -148,3 +148,6 @@ dmypy.json
 *.Identifier
 
 !.env.example
+# Django media / static
+/media/
+/staticfiles/

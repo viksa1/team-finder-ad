@@ -104,4 +104,31 @@ python manage.py runserver
 Если видите ракету с надписью "The install worked successfully! Congratulations!", то запуск прошёл успешно, Django работает!
 Осталось всего ничего: реализовать весь проект!
 
-Если в процессе разработки способ развертывания приложения поменяется, обновите `readme.md` с пометкой ревьюеру, как запускать и проверять приложение.
+---
+
+## Пометки для ревьюера
+
+
+- **Приложения:** `users` (модель пользователя, формы, аутентификация) и `projects` (проекты, навыки). 
+Шаблоны — `templates_var3`.
+
+- Телефон: допускается `8XXXXXXXXXX` / `+7XXXXXXXXXX`, хранится в виде `+7...`, уникален. Поле необязательное.
+
+- JSON-эндпоинты:
+
+`GET /projects/skills/?q=`, 
+`POST /projects/<id>/skills/add/`, 
+`POST /projects/<id>/skills/<skill_id>/remove/`, 
+`POST /projects/<id>/complete/`, 
+`POST /projects/<id>/toggle-participate/`.
+
+- Регистрация и вход происходит по email. После регистрации пользоваель перенаправляется на страницу входа. 
+
+**Как запустить:**
+1. `docker-compose up -d` (запуск БД)
+2. `python manage.py migrate` (создание таблиц)
+3. `python manage.py createsuperuser` (создание админа)
+4. `python manage.py runserver` (запуск сервера)
+
+**Как запустить тесты:**
+`python manage.py test`

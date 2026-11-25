@@ -77,7 +77,7 @@
       if (li.classList.contains("create-new")) {
         await addSkillByName(li.dataset.name);
       } else if (li.dataset.id) {
-        await addSkillById(li.dataset.id);
+        await addSkillById(li.dataset.id, li.textContent);
       }
       hideInput();
     });
@@ -90,7 +90,7 @@
 
         const first = suggestions.querySelector("li");
         if (first && first.dataset.id) {
-          await addSkillById(first.dataset.id);
+          await addSkillById(first.dataset.id, first.textContent);
         } else {
           await addSkillByName(q);
         }
@@ -119,38 +119,37 @@
         });
         if (res.ok) {
           chip.remove();
+          if (!container.querySelector(".skill-chip") && !container.querySelector(".skill-empty")) {
+            const empty = document.createElement("span");
+            empty.className = "skill-empty";
+            empty.textContent = "Навыки не указаны";
+            container.insertBefore(empty, addBtn);
+          }
         }
       }
     });
 
-    async function addSkillById(skillId) {
+    // Ответ бэкенда: {"skill_id": ..., "created": bool, "added": bool}
+    async function sendAdd(payload, name) {
       const res = await fetch(addUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),
         },
-        body: JSON.stringify({ skill_id: skillId }),
+        body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        const skill = await res.json();
-        appendChip(skill.id, skill.name);
-      }
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.added) appendChip(data.skill_id, name);
     }
 
-    async function addSkillByName(name) {
-      const res = await fetch(addUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({ name }),
-      });
-      if (res.ok) {
-        const skill = await res.json();
-        appendChip(skill.id, skill.name);
-      }
+    function addSkillById(skillId, name) {
+      return sendAdd({ skill_id: skillId }, name);
+    }
+
+    function addSkillByName(name) {
+      return sendAdd({ name }, name);
     }
 
     function appendChip(id, name) {
@@ -159,7 +158,14 @@
       const chip = document.createElement("span");
       chip.className = "skill-chip";
       chip.dataset.id = id;
-      chip.innerHTML = `${name} <button type="button" class="remove-skill-btn" aria-label="Удалить" title="Удалить">×</button>`;
+      chip.appendChild(document.createTextNode(name + " "));
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "remove-skill-btn";
+      removeBtn.setAttribute("aria-label", "Удалить");
+      removeBtn.title = "Удалить";
+      removeBtn.textContent = "×";
+      chip.appendChild(removeBtn);
 
       container.insertBefore(chip, addBtn);
 
